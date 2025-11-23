@@ -3,12 +3,12 @@ import mongoose from 'mongoose';
 const BookingSchema = new mongoose.Schema({
   hallId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Hall', // This links this booking to a specific Hall ID
+    ref: 'Hall',
     required: true,
   },
   userEmail: {
     type: String,
-    required: true, // Who booked it?
+    required: true,
   },
   startTime: {
     type: Date,
@@ -20,13 +20,16 @@ const BookingSchema = new mongoose.Schema({
   },
   purpose: {
     type: String,
-    required: true, // e.g., "Class Project Presentation"
+    required: true,
   },
   status: {
     type: String,
-    enum: ['confirmed', 'cancelled'], // Simple status
-    default: 'confirmed',
+    // UPDATE THIS LINE BELOW:
+    enum: ['pending', 'confirmed', 'rejected', 'cancelled'], 
+    default: 'pending', 
   }
-}, { timestamps: true }); // timestamps: true automatically adds 'createdAt'
+}, { timestamps: true });
+
+BookingSchema.index({ hallId: 1, startTime: 1, endTime: 1 });
 
 export default mongoose.models.Booking || mongoose.model('Booking', BookingSchema);

@@ -43,13 +43,15 @@ export async function POST(request) {
     }
 
     // Create Booking with the SECURE email
+    // ... inside POST function ...
+    
     const newBooking = await Booking.create({
       hallId,
-      userEmail, // <--- Using session email
+      userEmail,
       startTime: start,
       endTime: end,
       purpose,
-      status: 'confirmed'
+      status: 'pending', // <--- CHANGED THIS from 'confirmed'
     });
 
     return NextResponse.json({ success: true, booking: newBooking }, { status: 201 });
@@ -75,10 +77,13 @@ export async function GET(request) {
 }
 
 // Ensure DELETE is also protected!
+// ... imports are same ...
+
+// DELETE: Cancel a booking (SECURE VERSION)
 export async function DELETE(request) {
   await dbConnect();
   
-  // Protect Delete too!
+  // 1. Check if user is logged in
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -90,11 +95,59 @@ export async function DELETE(request) {
 
     if (!id) return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
 
-    // Optional: Check if the user owns this booking (or is admin)
-    // For now, any logged-in user can delete (we can restrict this later)
+    // 2. Find the booking first (don't delete it yet!)
+    const booking = await Booking.findById(id);
+
+    if (!booking) {
+      return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
+    }
+
+    // 3. AUTHORIZATION CHECK
+    // Allow if: User is Admin OR User is the Owner
+    const isOwner = booking.userEmail === session.user.email;
+    const isAdmin = session.user.isAdmin;
+
+    if (!isOwner && !isAdmin) {
+      return NextResponse.json(
+        { success: false, error: '⛔ Forbidden: You can only cancel your own bookings.' }, 
+        { status: 403 }
+      );
+    }
+
+    // 4. If passed, Delete it
     await Booking.findByIdAndDelete(id);
 
     return NextResponse.json({ success: true, message: 'Booking cancelled' });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+// PATCH: Admin updates the status (Approve/Reject)
+export async function PATCH(request) {
+  await dbConnect();
+  
+  // 1. Verify Admin Logic
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user.isAdmin) {
+    return NextResponse.json({ success: false, error: 'Access Denied' }, { status: 403 });
+  }
+
+  try {
+    const body = await request.json();
+    const { id, status } = body; // e.g. { id: "123", status: "confirmed" }
+
+    if (!['confirmed', 'rejected'].includes(status)) {
+      return NextResponse.json({ success: false, error: 'Invalid status' }, { status: 400 });
+    }
+
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      id,
+      { status: status },
+      { new: true } // Return the updated version
+    );
+
+    return NextResponse.json({ success: true, booking: updatedBooking });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
