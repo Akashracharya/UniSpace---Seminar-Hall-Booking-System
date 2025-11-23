@@ -12,11 +12,11 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: false, // <--- CHANGED: Password is now optional for Google users
   },
   isAdmin: {
     type: Boolean,
-    default: false, // By default, everyone is a student, not an admin
+    default: false,
   },
 }, { timestamps: true });
 

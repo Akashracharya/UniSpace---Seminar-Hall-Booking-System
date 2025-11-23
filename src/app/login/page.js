@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn } from 'next-auth/react'; // We use this for Google too
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -20,9 +20,8 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    // Call NextAuth signIn
     const res = await signIn('credentials', {
-      redirect: false, // We handle redirection manually
+      redirect: false,
       email: formData.email,
       password: formData.password,
     });
@@ -32,10 +31,14 @@ export default function LoginPage() {
     if (res.error) {
       setError('Invalid email or password');
     } else {
-      // Redirect to Home Page on success
       router.push('/');
-      router.refresh(); // Refresh to update the Navbar state
+      router.refresh();
     }
+  };
+
+  // NEW: Handle Google Login
+  const handleGoogleLogin = () => {
+    signIn('google', { callbackUrl: '/' });
   };
 
   return (
@@ -49,6 +52,24 @@ export default function LoginPage() {
           </div>
         )}
 
+        {/* GOOGLE BUTTON */}
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 py-2 rounded-md hover:bg-gray-50 transition mb-4 font-medium"
+        >
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+          Sign in with Google
+        </button>
+
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Email Address</label>
@@ -57,7 +78,6 @@ export default function LoginPage() {
               name="email"
               required
               className="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="student@college.edu"
               onChange={handleChange}
             />
           </div>
@@ -69,7 +89,6 @@ export default function LoginPage() {
               name="password"
               required
               className="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="••••••••"
               onChange={handleChange}
             />
           </div>
