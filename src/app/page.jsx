@@ -22,7 +22,7 @@ export default async function Home() {
           </span>
           <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-9">
             Seminar Halls, <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
+            <span className="text-blue-600 ">
               Booked For Events
             </span>
           </h1>
@@ -44,8 +44,7 @@ export default async function Home() {
       <section id="halls" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Premium Venues</h2>
-            <p className="text-gray-600">Select the perfect space for your seminar, workshop, or guest lecture.</p>
+            <p className="text-gray-600 font-semibold text-2xl">Select the perfect space for your seminar, workshop, or Events.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -54,7 +53,7 @@ export default async function Home() {
                 
                 {/* IMAGE AREA */}
                 <div className="relative h-56 overflow-hidden">
-                  <div className="absolute inset-0 bg-gray-200 animate-pulse"></div> {/* Skeleton loader effect if image loads slow */}
+                  <div className="absolute bg-gray-200"></div> {/* Skeleton loader effect if image loads slow */}
                   <img 
                     src={hall.image || 'https://placehold.co/600x400?text=No+Image'} 
                     alt={hall.name}
