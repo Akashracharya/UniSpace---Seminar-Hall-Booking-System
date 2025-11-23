@@ -104,6 +104,7 @@ export default async function Home() {
       <footer className="bg-white border-t border-gray-200 py-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-gray-500">© 2025 UniSpace Booking System. Built for Students.</p>
+          <p className="text-gray-500">Made With Love By Akash R Acharya</p>
         </div>
       </footer>
 
