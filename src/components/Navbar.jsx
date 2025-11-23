@@ -12,26 +12,25 @@ export default function Navbar() {
   const isActive = (path) => pathname === path ? "text-blue-600 bg-blue-50" : "text-gray-600 hover:text-blue-600 hover:bg-gray-50";
 
   return (
-    <nav className="fixed w-full z-50 top-0 start-0 border-b border-gray-200 bg-white/80 backdrop-blur-md transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="fixed w-full h-20 z-50 top-0 start-0 border-b border-gray-200 bg-white/80 backdrop-blur-md transition-all">
+      <div className="max-w-7xl mx-auto px-4 mt-2 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between h-16">
           
           {/* LOGO */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="bg-blue-600 text-white p-1.5 rounded-lg group-hover:bg-blue-700 transition">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            <div className="">
             </div>
-            <span className="self-center text-xl font-bold whitespace-nowrap text-gray-900 tracking-tight">
-              Uni<span className="text-blue-600">Space</span>
+            <span className="self-center text-3xl font-bold whitespace-nowrap text-gray-900 tracking-tight">
+              UniSpace
             </span>
           </Link>
 
           {/* DESKTOP MENU */}
           <div className="hidden md:flex items-center space-x-1">
-            <Link href="/" className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/')}`}>
+            <Link href="/" className={`px-4 py-2 rounded-lg font-medium transition-colors ${isActive('/')}`}>
               Home
             </Link>
-            <Link href="/dashboard" className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/dashboard')}`}>
+            <Link href="/dashboard" className={`px-4 py-2 rounded-lg font-medium transition-colors ${isActive('/dashboard')}`}>
               My Schedule
             </Link>
           </div>
@@ -61,10 +60,10 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link href="/login" className="text-gray-900 hover:bg-gray-100 font-medium rounded-lg text-sm px-4 py-2 transition">
+                <Link href="/login" className="text-gray-900 hover:bg-gray-100 font-medium rounded-lg px-4 py-2 transition">
                   Log in
                 </Link>
-                <Link href="/register" className="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-4 py-2 shadow-md hover:shadow-lg transition">
+                <Link href="/register" className="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition">
                   Get Started
                 </Link>
               </div>
