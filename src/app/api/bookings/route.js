@@ -1,55 +1,51 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Booking from '@/models/Booking';
-import Hall from '@/models/Hall'; // We need this to show Hall Names
+import { getServerSession } from 'next-auth'; // Import this
+import { authOptions } from '@/lib/authOptions'; // Import your shared config
 
-// POST method: Use this to CREATE a new booking
 export async function POST(request) {
   await dbConnect();
 
+  // 1. SECURITY CHECK: Is the user logged in?
+  const session = await getServerSession(authOptions);
+  
+  if (!session) {
+    return NextResponse.json({ success: false, error: 'Unauthorized. Please login.' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
+    const { hallId, startTime, endTime, purpose } = body;
     
-    // 1. Destructure the data coming from the frontend
-    const { hallId, userEmail, startTime, endTime, purpose } = body;
+    // 2. SECURITY CHECK: Use the email from the SESSION, not the user input
+    // This prevents "User A" from booking as "User B"
+    const userEmail = session.user.email;
 
-    // 2. Convert string dates to real Date objects
     const start = new Date(startTime);
     const end = new Date(endTime);
 
-    // 3. Basic Safety Checks
     if (start >= end) {
-      return NextResponse.json(
-        { success: false, error: 'End time must be after start time' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'End time must be after start time' }, { status: 400 });
     }
 
-    // 4. THE CONFLICT DETECTOR (Crucial Step)
-    // We search for any EXISTING booking that overlaps with the NEW request.
-    // Logic: A conflict exists if (NewStart < OldEnd) AND (NewEnd > OldStart)
+    // Check Conflicts
     const existingBooking = await Booking.findOne({
       hallId: hallId,
-      status: { $ne: 'cancelled' }, // Ignore cancelled bookings
+      status: { $ne: 'cancelled' },
       $or: [
-        {
-          startTime: { $lt: end },
-          endTime: { $gt: start }
-        }
+        { startTime: { $lt: end }, endTime: { $gt: start } }
       ]
     });
 
     if (existingBooking) {
-      return NextResponse.json(
-        { success: false, error: '❌ Conflict! This time slot is already booked.' },
-        { status: 409 } // 409 means "Conflict"
-      );
+      return NextResponse.json({ success: false, error: '❌ Conflict! This time slot is already booked.' }, { status: 409 });
     }
 
-    // 5. If no conflict, save the booking!
+    // Create Booking with the SECURE email
     const newBooking = await Booking.create({
       hallId,
-      userEmail,
+      userEmail, // <--- Using session email
       startTime: start,
       endTime: end,
       purpose,
@@ -63,14 +59,14 @@ export async function POST(request) {
   }
 }
 
+// Ensure GET is also updated to keep using your existing logic
 export async function GET(request) {
   await dbConnect();
 
   try {
-    // We use .populate('hallId') to replace the ID with the actual Hall Name
     const bookings = await Booking.find({})
       .populate('hallId', 'name') 
-      .sort({ startTime: 1 }); // Sort by closest date first
+      .sort({ startTime: 1 });
 
     return NextResponse.json({ success: true, data: bookings });
   } catch (error) {
@@ -78,20 +74,24 @@ export async function GET(request) {
   }
 }
 
-// DELETE: Cancel a specific booking
+// Ensure DELETE is also protected!
 export async function DELETE(request) {
   await dbConnect();
+  
+  // Protect Delete too!
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
-    // Get the booking ID from the URL (e.g., ?id=12345)
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
-    if (!id) {
-      return NextResponse.json({ success: false, error: 'Booking ID required' }, { status: 400 });
-    }
+    if (!id) return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
 
-    // Delete the booking
+    // Optional: Check if the user owns this booking (or is admin)
+    // For now, any logged-in user can delete (we can restrict this later)
     await Booking.findByIdAndDelete(id);
 
     return NextResponse.json({ success: true, message: 'Booking cancelled' });

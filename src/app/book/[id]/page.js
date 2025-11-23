@@ -1,24 +1,30 @@
 'use client';
 
-import { useState, use } from 'react'; // <--- We added 'use' here
+import { useState, use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react'; // Import session hook
 
 export default function BookingPage({ params }) {
   const router = useRouter();
-  
-  // FIX: In Next.js 15, params is a Promise. We must unwrap it with use()
-  const resolvedParams = use(params); 
+  const { data: session, status } = useSession(); // Get session data
+  const resolvedParams = use(params);
   const hallId = resolvedParams.id;
 
   const [formData, setFormData] = useState({
     date: '',
     startTime: '',
     endTime: '',
-    email: '',
     purpose: ''
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  // 1. CHECK LOGIN STATUS
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login'); // Kick them out if not logged in
+    }
+  }, [status, router]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,10 +44,11 @@ export default function BookingPage({ params }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           hallId,
-          userEmail: formData.email,
-          purpose: formData.purpose,
+          // SECURITY: We don't send the email from the form anymore.
+          // The backend will grab it directly from the secure session.
           startTime: startDateTime,
           endTime: endDateTime,
+          purpose: formData.purpose,
         }),
       });
 
@@ -49,7 +56,7 @@ export default function BookingPage({ params }) {
 
       if (data.success) {
         setMessage('✅ Booking Successful! Redirecting...');
-        setTimeout(() => router.push('/'), 2000);
+        setTimeout(() => router.push('/dashboard'), 2000);
       } else {
         setMessage(data.error);
       }
@@ -60,6 +67,16 @@ export default function BookingPage({ params }) {
     }
   };
 
+  // Show loading while checking if user is logged in
+  if (status === 'loading') {
+    return <div className="p-10 text-center">Checking access...</div>;
+  }
+
+  // If user is not logged in (and hasn't redirected yet), show nothing
+  if (!session) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md border border-gray-100">
@@ -67,14 +84,14 @@ export default function BookingPage({ params }) {
         
         <form onSubmit={handleSubmit} className="space-y-4">
           
+          {/* Email Field is now Read-Only */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Student Email</label>
             <input
-              type="email"
-              name="email"
-              required
-              className="mt-1 w-full p-2 border rounded-md"
-              onChange={handleChange}
+              type="text"
+              value={session.user.email} // Auto-filled from session
+              disabled // User cannot change this
+              className="mt-1 w-full p-2 border rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
             />
           </div>
 
@@ -134,7 +151,7 @@ export default function BookingPage({ params }) {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
           >
-            {loading ? 'Checking Availability...' : 'Confirm Booking'}
+            {loading ? 'Processing...' : 'Confirm Booking'}
           </button>
         </form>
       </div>
