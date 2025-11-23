@@ -17,13 +17,13 @@ export default async function Home() {
         </div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-block py-1 px-3 rounded-full bg-blue-50 text-blue-600 text-sm font-semibold mb-6 border border-blue-100">
-            🚀 The Smart Way to Book Venues
+          <span className="inline-block py-1 px-3 rounded-full bg-blue-50 text-blue-600 mb-10 border border-blue-100 font-semibold text-2xl">
+            AJ INSTITUTE OF ENGINEERING AND TECHNOLOGY
           </span>
-          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-6">
+          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-9">
             Seminar Halls, <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
-              Booked in Seconds.
+              Booked For Events
             </span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
